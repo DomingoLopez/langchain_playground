@@ -1,0 +1,235 @@
+Vector databases are a hot topic right now, driven by the increasing popularity of artificial intelligence and machine learning applications. Many companies are continually raising money to develop their vector databases or to add vector search capabilities to their existing SQL or NoSQL databases.
+
+Today, there are a number of different vector databases available like chroma, weaviate, etc. You can check the landscape of vector databases below.
+
+
+Image Source: https://blog.det.life/why-you-shouldnt-invest-in-vector-databases-c0cd3f59d23c
+But some of you might be wondering, what is a vector database? And why do people keep talking about it?
+
+
+What is Vector Database?
+In a nutshell, a vector database (or we can call it a vector DB) is a specific kind of database that stores information (data) in the form of high-dimensional vector representations. This data could be anything like images, text, etc.
+
+
+You can imagine a vector database as a super-smart librarian who knows every book in the library. They also know how to organize all the books based on their themes and connections. It makes it easy for us when we want to find a book with specific topic.
+
+Essentially, a vector DB works like that but in the digital world. It can organize vast amounts of data points based on their similarity. This allows us to find information in semantic or contextual relevance rather than relying on exact matches or set criteria like conventional databases. For example, a vector DB can help us discover articles similar to another specific article. Or we can also combine vector DB with LLM to create robust Retrieval Augmented Generation (RAG) system (what do you think, should I write an article to explain about RAG?).
+
+Hmm, but how does this vector DB works? To answer this question, we need to understand several concept:
+
+Vector
+Embedding
+Similarity Score
+Okey, let’s start with vector!
+
+Vector
+I believe some of you are already familiar with vectors. It’s not a new concept, both Math and Physics have their own definitions of vectors. In physics, vector is a quantity that has both magnitude and direction. In math, we imagine vectors as a geometric entity that describe the magnitude and direction of something.
+
+To simplify, we can define a vector as a list of attributes of an object. For example, a house might have several features such as the number of bedrooms, bathrooms, area, sale price, etc. We can represent all these features as a vector, as illustrated in the picture below.
+
+
+You can imagine vector DB as a database that stores vectors that can describe something. And vector DB will define some relationship between vectors. Hmm, how vector DB create relationships between vectors? Before we discuss this, let’s talk about embedding first.
+
+Embedding
+Okay, let’s talk about embedding. It’s a common technique in NLP (Natural Language Processing) used to transform our text content into vectors that capture the meaning of words and sentences. Nowadays, there are several pre-trained embedding models available, such as those from OpenAI, Google, MetaAI, or the open-source community, that we can use. These models learn from a lot of text to map words into a multi-dimensional vector space. The location of a data point in the vector space tells us which words are related to each other.
+
+
+Let’s say, we have 10 sample sentences like this:
+
+text_chunks = [
+"Sunsets are breathtaking.",
+"Kindness is contagious.",
+"Laughter brings joy.",
+"Music is uplifting.",
+"Success is rewarding.",
+"Traffic jams are frustrating.",
+"Rainy days can be gloomy.",
+"Failure is disheartening.",
+"Mosquitoes are annoying.",
+"Colds are unpleasant."
+]
+We can use an embedding model to transform each sentence into a multi-dimensional vector. In this example, I used paraphrase-MiniLM-L6-v2, which transforms each sentence into a 34-dimensional vector. Next, we can use PCA to reduce the number of dimensions, allowing us to plot them into a two-dimensional graph, like this.
+
+
+As you can see, sentences with similar sentiments are close to each other. Yap, we can use the distance to identify sentences with similar meanings.
+
+But the next problem is, as humans, it’s relatively easy to identify points that are close together when plotted in a simple two-dimensional space. But how do we measure that in a vector space with hundreds and thousands of dimensions? This is where metric similarity scores come into play!
+
+Similarity Score
+In statistics, there are various metrics to measure the distance between vector or data points. Two commonly used metrics are Cosine and Euclidean. My favorite one is the cosine because I love my cousin (sorry for the silly joke hehehe).
+
+
+Image source: https://www.maartengrootendorst.com/blog/distances/
+In the cosine metric, we determine similarity by calculating the cosine value of the angle (θ) between two vectors. When the angle between two vectors is close to zero, the cosine value is close to 1. Conversely, if the angle is 90 degrees (referred to as orthogonal vectors in mathematics), the cosine value is zero.
+
+
+Image source: https://www.learndatasci.com/glossary/cosine-similarity/
+Yap, as you can see, we can use this metric to calculate similarity between sentence. For example,let’s consider a new sentence: ‘Rainy days make me sad”. If we want to find a sentence with a similar meaning from our existing list of sentences, calculating the cosine for each sentence provides values like these.
+
+
+As expected, ‘Rainy days can be gloomy’ is the most similar sentence to our new one. Both convey negative feelings about rain. On the other hand, ‘Success is rewarding’ yields the smallest cosine value, which makes sense as it expresses a positive sentiment.
+
+Yes, that is precisely our objective with the vector database, to rapidly identify similar entries. However, if we were to compare each vector to every other vector, the process would become significantly time-consuming, especially as the list of sentences grows. That’s why we need to find an efficient way to speed up the similarity search process.
+
+How to Speed up the Similarity Search?
+Vector database used several Approximate Nearest Neighbor algorithms to speed up the similarity search process. For example, Chroma supports multiple algorithms for storing and indexing high-dimensional vectors, including HNSW, IVFADC, and IVFPQ.
+
+Hierarchical Navigable Small World (HNSW): HNSW is an algorithm that constructs a hierarchical graph structure to index high-dimensional vectors. It can help us to quickly store and search high-dimensional vectors with minimal memory usage. You can check this vidio: HNSW for Vector Search Explained, if you want to know more about this algorithm.
+Inverted File with Approximate Distance Calculation (IVFADC): IVFADC utilizes an inverted index structure to index high-dimensional vectors. It is known for its fast search speed and ability to handle large-scale datasets.
+Inverted File with Product Quantization (IVFPQ): IVFPQ is an algorithm that uses product quantization to compress high-dimensional vectors before indexing. This results in a high-accuracy search capability, making it suitable for processing massive datasets..
+
+
+ADDITIONAL INFO:
+
+What is a Vector?
+In machine learning (ML), a vector is a collection of numerical values that represent the characteristics or features of multi-dimensional objects such as words, images, etc.
+
+
+source
+For example, a vector representing an image might contain values corresponding to the pixel intensities of the image, in the order of the image’s color channels.
+
+
+Source
+What are Embeddings?
+An embedding is a technique for representing complex data, such as images, text, or audio, as numerical vectors.
+
+These embeddings capture the essence of the data and show clearly the semantic similarity (or relationship) between different objects, with similar objects having vectors that are close to each other in the vector space. Thus, ML algorithms allow them to be efficiently processed and analyzed.
+
+
+source
+ML models often generate embeddings as part of their training process. For LLMs, an embedding model is put in place to create the embeddings
+
+Embeddings are vectors that represent the essential features of a data point. For example, a natural language processing model might generate embeddings for words or sentences.
+
+Embeddings can be used for a variety of tasks, such as clustering, classification, and anomaly detection. Vector databases can be used to store and query embeddings efficiently, which makes them ideal for ML applications.
+
+To see what embeddings look like, check out this Vectorizer created by Kenny, it converts texts to embeddings.
+
+Note: An embedding is a vector representation, but not all vectors are embeddings.
+
+Putting it all together, let us define a vector database.
+
+What is a Vector Database?
+A vector database is a type of database that stores and manages unstructured data, such as text, images, or audio, in high-dimensional vectors, to make it easy to find and retrieve similar objects quickly at scale in production.
+
+They work by using algorithms like vector similarity search to index and query vector embeddings,
+
+The importance of vector databases in LLM projects lies in their ability to provide easy search, high performance, scalability, and data retrieval by comparing values and finding similarities between them
+
+
+Vector database’s search capabilities can be used in various applications ranging from classical ML use cases, such as recommender systems, to providing long-term memory to large language models in modern applications, to text understanding, video summarization, drug discovery, stock market analysis, and much more.
+
+As data continues to grow in complexity and volume, the scalability, speed, and accuracy offered by vector databases position them as a critical tool for extracting meaningful insights and unlocking new opportunities across various domains.
+
+What are the benefits of Vector Databases?
+Here are some specific reasons why vector databases are so well-suited for LLMs and generative AI:
+
+Handling Massive Data Loads
+Vector databases can handle the massive amounts of data that are generated by LLMs and generative AI. Traditional databases might struggle with the millions or even billions of data points produced in a single run, but vector databases are purpose-built to handle such large datasets with efficiency.
+
+Efficient Similarity Searches
+Vector databases can find data that is similar to a given query vector. This is essential for tasks such as image search and content recommendation, which are often used in conjunction with LLMs and generative AI. For example, if you are using an LLM to generate a new image, you can use a vector database to find other images that are similar to the generated image.
+
+Integration with ML Algorithms
+Vector databases can be integrated with machine learning algorithms. This makes it easy to use vector databases to train and evaluate machine learning models. For example, you can use a vector database to store the data that is used to train a model, and then use the vector database to search for the data that is most relevant to the model.
+
+Handling Vector Embeddings
+Vector databases provide a superior solution for handling vector embeddings by addressing the limitations of standalone vector indices, such as scalability challenges, cumbersome integration processes, and the absence of real-time updates and built-in security measures.
+
+List of Some Top Vector Databases
+There are several vector database solutions available in the market, each with its own set of features and capabilities. Some of the top vector database solutions include:
+
+Weaviate
+Pinecone
+Chroma DB
+Qdrant
+Milvus
+Here’s an overview of some of the features of these vector databases. You can go see this comprehensive vector database features matrix by Dhruv Anand
+
+
+Source: Author
+Weaviate
+Weaviate is an open-source vector database that can be used to store, search, and manage vectors of any dimensionality. It is designed to be scalable and easy to use, and it can be deployed on-premises or in the cloud.
+
+
+Features:
+
+Weaviate can store and search vectors from various data modalities, including images, text, and audio.
+Weaviate provides seamless integration with machine learning frameworks such as Hugging Face, Open AI, LangChain, Llamaindex, TensorFlow, PyTorch, and Scikit-learn.
+Weaviate can index vectors in real-time, making it ideal for applications that require low-latency search.
+Weaviate can be scaled to handle large volumes of data and high query throughput.
+Weaviate can be used in memory for fast search or with disk-based storage for larger datasets.
+Weaviate provides a user-friendly interface for managing vectors and performing searches.
+Pinecone
+Pinecone is a fully managed cloud-based vector database that is designed to make it easy for businesses and organizations to build and deploy large-scale ML applications.
+
+
+Some Pinecone Features:
+
+Pinecone is designed to be fast and scalable, allowing for efficient retrieval of similar data points based on their vector representations.
+It can handle large-scale ML applications with millions or billions of data points.
+Pinecone provides infrastructure management or maintenance to its users.
+Pinecone can handle high query throughput and low latency search.
+Pinecone is a secure platform that meets the security needs of businesses and organizations.
+Pinecone is designed to be user-friendly and accessible via its simple API for storing and retrieving vector data, making it easy to integrate into existing ML workflows.
+Pinecone supports real-time updates, allowing for efficient updates to the vector database as new data points are added. This ensures that the vector database remains up-to-date and accurate over time.
+Pinecone can be synced with data from various sources using tools like Airbyte and monitored using Datadog
+Chroma DB
+Chroma DB is an open-source vector store for storing and retrieving vector embeddings. It is mainly used to save embeddings along with metadata to be used later by LLMs and can also be used for semantic search engines over text data.
+
+
+Chroma DB offers a self-hosted server option and supports different underlying storage options like DuckDB for standalone or ClickHouse for scalability.
+
+Chroma DB offers two memory modes:
+
+The in-memory mode
+The persistent memory
+The in-memory mode is used for rapid testing, providing proof of concept (POC) and querying, allowing the reuse of collections between runs.
+
+The persistent memory allows users to save and load data to and from a disk, causing the persistence of the database beyond the current session. This allows for the addition and deletion of documents after collection creation, and it is essential for production use cases where an in-memory database is not sufficient.
+
+Some of the key features of Chroma DB are:
+
+Chroma DB supports different underlying storage options like DuckDB for standalone or ClickHouse for scalability.
+It provides SDKs for Python and JavaScript/TypeScript and focuses on simplicity, speed, and enabling analysis.
+Chroma can store vectors from various data types, including text, images, and audio.
+Qdrant
+Qdrant is an open-source vector database and vector search engine that provides fast and scalable vector similarity search services with additional payloads.
+
+
+Here are some of the features of Qdrant:
+
+Qdrant offers support for disk-stored collections, as storage space is cheaper than memory. It has introduced the Scalar Quantization mechanism recently, which makes it possible to reduce the memory requirements by up to four times.
+Qdrant allows users to express more complex conditions for nested structures.
+It provides an asynchronous I/O interface that reduces overhead by managing I/O operations asynchronously, thus minimizing context switches.
+It uses distance metrics to measure similarities among vectors, and they must be selected at the same time you are creating a collection.
+It can be used with the Python quadrant client, which provides a convenient API to store, search, and manage points (i.e., vectors) with an additional payload.
+Milvus
+Milvus is an open-source vector database that is designed for similarity searches in dense vector datasets containing millions or even billions of vectors. Milvus vector database adopts a systemic approach to cloud-nativity by separating compute from storage and allowing you to scale both up and out.
+
+
+Milvus docs
+Here are some of the features of Milvus:
+
+Milvus uses a distributed architecture that separates storage and computing, allowing for horizontal scalability in computing nodes.
+Milvus can be scaled to handle trillions of vectors and millions of queries per second.
+Milvus supports various data types, and it provides enhanced vector similarity search with attribute filtering, UDF support, configurable consistency level, time travel, and more
+Milvus can handle high query throughput and low latency searches.
+To help users try Milvus quicker, Bin Ji, a top contributor to the Milvus community, developed Milvus Lite, a lightweight version of Milvus. It can help you get started with Milvus in minutes, while at the same time offering many benefits.
+Milvus provides a user-friendly interface for managing vectors and performing searches.
+How To Choose The Right Vector Database For Your LLM Projects
+To choose the right vector database for LLM projects, there are some factors you should consider. They include:
+
+Scalability: Since LLMs generate and consume vast amounts of vector data, it is best to choose a database that can efficiently store and manage large-scale datasets without compromising performance. Also, the vector database must be able to seamlessly handle future data additions and expansion of your LLM project’s scope.
+
+Performance: It should deliver fast query execution and swift retrieval of relevant vectors. It should also efficiently handle multi-dimensional queries and complex similarity searches.
+
+Security: The database should provide robust security features, including encryption, access controls, and authentication mechanisms. For use cases with personal or sensitive data, the vector database should align with applicable privacy regulations.
+
+Cost: Using LLM APIs already costs a fortune when running at scale, so you look out for a vector base. with flexible pricing models and one that fits your use case.
+
+Query interfaces: Evaluate the ease of interaction with the database, including available query languages, APIs, and user interfaces.
+
+Deployment options: Make sure the vector database whether cloud-based, on-premise, or hybrid solutions matches your infrastructure preferences and data sensitivity.
+
+Integration capabilities: Ensure seamless integration with your existing LLM infrastructure and other tools in your workflow.
