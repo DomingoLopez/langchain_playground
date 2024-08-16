@@ -1,7 +1,8 @@
 import os
+from typing import Any, Dict, List
 from dotenv import load_dotenv
 from langchain.chains.retrieval import create_retrieval_chain
-
+from langchain.chains.history_aware_retriever import create_history_aware_retriever
 from langchain import hub
 from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain_pinecone import PineconeVectorStore
@@ -14,7 +15,7 @@ load_dotenv()
 
 
 
-def run_llm(query: str):
+def run_llm(query: str, chat_history: List[Dict[str, Any]] = []):
     # modelo embeddings
     embeddings = OpenAIEmbeddings(model="text-embedding-3-small")
     # Retrieval de la bbdd vectorial
@@ -25,12 +26,19 @@ def run_llm(query: str):
     retrieval_qa_chat_prompt = hub.pull("langchain-ai/retrieval-qa-chat")
     # cadena con llm y el prompt
     stuff_documents_chain = create_stuff_documents_chain(llm, retrieval_qa_chat_prompt)
-    # creamos la cadena
+    
+    
+    # prompt para añadir la memoria
+    rephrase_prompt = hub.pull("langchain-ai/chat-langchain-rephrase")
+    history_aware_retriever = create_history_aware_retriever(
+        llm=llm, retriever=vectorStore.as_retriever(),prompt=rephrase_prompt
+    )
+    # Ahora el retriever de esta cadena es la salida de la anterior
     qa = create_retrieval_chain(
-        retriever=vectorStore.as_retriever(), combine_docs_chain=stuff_documents_chain
+        retriever=history_aware_retriever, combine_docs_chain=stuff_documents_chain
     )
     
-    result = qa.invoke({"input":query})
+    result = qa.invoke({"input":query, "chat_history": chat_history})
     new_result = {
         "query": result["input"],
         "result": result["answer"],

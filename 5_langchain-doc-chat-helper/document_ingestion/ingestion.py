@@ -1,3 +1,6 @@
+## FALTA HACER LA INGESTA CON FIRECRAWL porque da mejores resultados.
+# Hacemos un buen scrapeo así.
+
 # Archivo de ingestión de la documentación 
 # Descarga de la documentación con: 
 # !wget -r -A.html -P langchain-docs https://langchain.readthedocs.io/en/latest/
