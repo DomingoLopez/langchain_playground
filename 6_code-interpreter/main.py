@@ -1,3 +1,4 @@
+from typing import Any
 from dotenv import load_dotenv
 from langchain import hub
 from langchain_openai import ChatOpenAI
@@ -39,8 +40,8 @@ def main():
         prompt=prompt, llm=ChatOpenAI(temperature=0, model="gpt-4-turbo"), tools=tools
     )
 
-    # agent_executor = AgentExecutor(agent=agent, tools=tools, verbose=True)
-    # agent_executor.invoke(
+    python_agent_executor = AgentExecutor(agent=agent, tools=tools, verbose=True)
+    # python_agent_executor.invoke(
     #     {
     #         "input": """
     #         generate and save in current working directory (inside new folder named qr_codes) 15 QRCodes that point to www.udemy.com/course/langchain,
@@ -51,17 +52,75 @@ def main():
 
     # -------------------------------------------------------------------------------
 
-    csv_agent = create_csv_agent(
+    csv_agent_executor: AgentExecutor = create_csv_agent(
         llm=ChatOpenAI(temperature=0, model="gpt-4"),
         path="episode_info.csv",
         verbose=True,
         allow_dangerous_code=True
     )
 
-    csv_agent.invoke({"input": "which season has the most episodes in file episode_info.csv"})
+    # csv_agent_executor.invoke({"input": "which season has the most episodes in file episode_info.csv"})
     # csv_agent.invoke({"input": "¿Cuántas episódios por año y por director se han rodado? usando el fichero episode_info.csv"})
     
     # Es muy posible que no mande el csv completo, ya que el context es más pequeño que el csv completo. 
+
+
+    ######################### Router Grand Agent #############################
+
+    """¿Porqué hemos de usar este wrapper?
+       Porque al poner func=....invoke, no se le está pasando el input.
+       Así metemos el prompt a piñón.
+    """
+    def python_agent_executor_wrapper(original_prompt: str) -> dict[str, Any]:
+        return python_agent_executor.invoke({"input": original_prompt})
+
+
+
+    tools = [
+        Tool(
+            name="Python Agent",
+            func=python_agent_executor_wrapper,
+            description="""Useful when you need to transform natural language to python and execute the python code,
+                        returning the results of the code execution.
+                        DOES NOT ACCEPT CODE AS INPUT"""
+            
+        ),
+        Tool(
+            name="CSV Agent",
+            func=csv_agent_executor.invoke,
+            description="""Useful when you need to answer question over episode_info.csv file,
+                        takes an input the entire question and returns the answer after running pandas calculations"""
+            
+        )
+    ]
+    
+    # creamos el prompt para el router, usando ReAct, igual que con el python agent, pero sin instrucciones
+    prompt = base_prompt.partial(instructions="")
+
+    grand_agent = create_react_agent(
+        prompt = prompt, 
+        llm=ChatOpenAI(temperature=0, model="gpt-4-turbo"),
+        tools=tools
+    )
+    grand_agent_executor = AgentExecutor(agent=grand_agent, tools=tools, verbose=True)
+
+    # print(
+    #     grand_agent_executor.invoke({
+    #         "input": "which season has the most episodes?"
+    #     })
+    # )
+    
+    
+    print(
+        grand_agent_executor.invoke({
+            "input": "generate and save in current directory (inside a new directory called qr_codes_v2) 10 qrcodes that point to www.udemy.com"
+        })
+    )
+
+
+
+
+
 
 
 if __name__ == "__main__":
